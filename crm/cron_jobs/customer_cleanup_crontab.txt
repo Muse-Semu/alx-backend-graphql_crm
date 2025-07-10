@@ -1,1 +1,1 @@
-0 2 * * 0 /home/mama/Documents/Personal/Alx/projects/alx-backend-graphql_crm/crm/cron_jobs/customer_cleanup_crontab.txt
+0 2 * * 0 /home/mama/Documents/Personal/Alx/projects/alx-backend-graphql_crm/crm/cron_jobs/customer_cleanup_crontab.sh
