@@ -1,9 +1,12 @@
 from datetime import datetime
 import os
-
 from gql import gql, Client
 from gql.transport.requests import RequestsHTTPTransport
 
+import graphene
+from graphene_django.utils import GraphQLTestCase
+from crm.schema import schema
+from datetime import datetime
 
 def log_crm_heartbeat():
     # Time format: DD/MM/YYYY-HH:MM:SS
@@ -33,7 +36,8 @@ def log_crm_heartbeat():
 
 
 
-def update_low_stock():
+
+def updatelowstock():
     mutation = """
         mutation {
             updateLowStockProducts {
@@ -46,9 +50,15 @@ def update_low_stock():
         }
     """
     result = schema.execute(mutation)
+    if result.errors:
+        with open("/tmp/lowstockupdates_log.txt", "a") as log_file:
+            timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            log_file.write(f"{timestamp} - Error executing mutation: {result.errors}\n")
+        return
+    
     updated_products = result.data["updateLowStockProducts"]["updatedProducts"]
     
-    with open("/tmp/low_stock_updates_log.txt", "a") as log_file:
+    with open("/tmp/lowstockupdates_log.txt", "a") as log_file:
         timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         for product in updated_products:
             log_file.write(f"{timestamp} - Updated {product['name']} to stock {product['stock']}\n")
