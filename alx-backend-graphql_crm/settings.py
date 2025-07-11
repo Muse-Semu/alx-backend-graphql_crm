@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'crm',  # Register the crm app
     'graphene_django',  # Register graphene-django for GraphQL
     'django_filters',  # Register django-filter
+    'django_crontab',  # Register django-crontab
 ]
 
 MIDDLEWARE = [
