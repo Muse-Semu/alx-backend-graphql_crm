@@ -1,32 +1,32 @@
 import graphene
-from .models import Product  # adjust import as needed
+from graphene_django import DjangoObjectType
+from crm.models import Product
 
-class ProductType(graphene.ObjectType):
-    id = graphene.ID()
-    name = graphene.String()
-    stock = graphene.Int()
+class ProductType(DjangoObjectType):
+    class Meta:
+        model = Product
+        fields = ("id", "name", "stock")
 
 class UpdateLowStockProducts(graphene.Mutation):
-    class Output = graphene.List(ProductType)
+    class Arguments:
+        pass
 
-    success = graphene.String()
     updated_products = graphene.List(ProductType)
+    message = graphene.String()
 
     def mutate(self, info):
         low_stock_products = Product.objects.filter(stock__lt=10)
-
-        updated = []
+        updated_products = []
+        
         for product in low_stock_products:
             product.stock += 10
             product.save()
-            updated.append(product)
-
-        return UpdateLowStockProducts(
-            success="Low-stock products updated successfully.",
-            updated_products=updated,
-        )
+            updated_products.append(product)
+        
+        message = f"Updated {len(updated_products)} products with low stock."
+        return UpdateLowStockProducts(updated_products=updated_products, message=message)
 
 class Mutation(graphene.ObjectType):
     update_low_stock_products = UpdateLowStockProducts.Field()
 
-# Don't forget to include this Mutation class in your schema object if you're combining multiple apps.
+schema = graphene.Schema(mutation=Mutation)

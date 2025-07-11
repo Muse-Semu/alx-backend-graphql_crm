@@ -31,35 +31,24 @@ def log_crm_heartbeat():
 
 
 
-def update_low_stock():
-    transport = RequestsHTTPTransport(
-        url='http://localhost:8000/graphql',
-        verify=False,
-        retries=3,
-    )
-    client = Client(transport=transport, fetch_schema_from_transport=True)
 
-    mutation = gql("""
-    mutation {
-        updateLowStockProducts {
-            success
-            updatedProducts {
-                name
-                stock
+
+def update_low_stock():
+    mutation = """
+        mutation {
+            updateLowStockProducts {
+                updatedProducts {
+                    name
+                    stock
+                }
+                message
             }
         }
-    }
-    """)
-
-    try:
-        result = client.execute(mutation)
-        updates = result.get('updateLowStockProducts', {}).get('updatedProducts', [])
-        timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-
-        with open('/tmp/low_stock_updates_log.txt', 'a') as log_file:
-            for product in updates:
-                log_file.write(f"{timestamp} - Updated: {product['name']}, Stock: {product['stock']}\n")
-
-        print("Low-stock products updated successfully.")
-    except Exception as e:
-        print(f"Failed to update low-stock products: {e}")
+    """
+    result = schema.execute(mutation)
+    updated_products = result.data["updateLowStockProducts"]["updatedProducts"]
+    
+    with open("/tmp/low_stock_updates_log.txt", "a") as log_file:
+        timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        for product in updated_products:
+            log_file.write(f"{timestamp} - Updated {product['name']} to stock {product['stock']}\n")
